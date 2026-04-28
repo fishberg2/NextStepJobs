@@ -1,6 +1,15 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
-import firebaseConfig from '../../firebase-applet-config.json';
+
+const firebaseConfig = {
+  projectId: "nextstep-83c96",
+  appId: "1:701481021696:web:6d595a7cc14457b095c3e5",
+  apiKey: "AIzaSyBgVVuxIHdzJd9ODkaBcRJIPg9x1QqUazY",
+  authDomain: "nextstep-83c96.firebaseapp.com",
+  storageBucket: "nextstep-83c96.firebasestorage.app",
+  messagingSenderId: "701481021696",
+  measurementId: "G-86L8GV402N"
+};
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
