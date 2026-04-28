@@ -47,6 +47,9 @@ export const signInWithGoogle = async () => {
     if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cross-origin-opener-policy-failed') {
       // Fallback to exactly what Firebase recommends: redirect
       await signInWithRedirect(auth, provider);
+    } else if (error.code === 'auth/unauthorized-domain') {
+      console.error("Unauthorized domain error", error);
+      alert("This domain is not authorized for Firebase Authentication yet. If you just added it to the Firebase Console, please wait a few minutes for the changes to propagate and try again.");
     } else {
       console.error("Error signing in with Google", error);
       alert("Error signing in with Google: " + error.message);
