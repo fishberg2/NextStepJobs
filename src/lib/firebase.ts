@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { UserData } from './store';
@@ -7,6 +7,26 @@ import { UserData } from './store';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+
+export const handleRedirectResult = async () => {
+  try {
+    const res = await getRedirectResult(auth);
+    if (res && res.user) {
+      const userDocRef = doc(db, 'users', res.user.uid);
+      const snap = await getDoc(userDocRef);
+      if (!snap.exists()) {
+        await setDoc(userDocRef, {
+          displayName: res.user.displayName,
+          photoURL: res.user.photoURL,
+          email: res.user.email,
+          createdAt: new Date().toISOString()
+        });
+      }
+    }
+  } catch (error: any) {
+    console.error("Error handling redirect result", error);
+  }
+};
 
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
@@ -23,8 +43,14 @@ export const signInWithGoogle = async () => {
         createdAt: new Date().toISOString()
       });
     }
-  } catch (error) {
-    console.error("Error signing in with Google", error);
+  } catch (error: any) {
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cross-origin-opener-policy-failed') {
+      // Fallback to exactly what Firebase recommends: redirect
+      await signInWithRedirect(auth, provider);
+    } else {
+      console.error("Error signing in with Google", error);
+      alert("Error signing in with Google: " + error.message);
+    }
   }
 };
 

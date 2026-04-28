@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Briefcase, GraduationCap, Sparkles, Loader2, CheckCircle2, ChevronLeft, Moon, Sun, LogIn, LogOut, ChevronDown, ExternalLink } from 'lucide-react';
 import { getCareerRecommendations, getSkillTranslations, getCareerMap, UserProfile, CareerRecommendation } from './utils/gemini';
 import { useAppStore } from './lib/store';
-import { signInWithGoogle, logout, auth, fetchUserData, updateUserData, fetchNetworkUsers } from './lib/firebase';
+import { signInWithGoogle, logout, auth, fetchUserData, updateUserData, fetchNetworkUsers, handleRedirectResult } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import type { UserData } from './lib/store';
 
@@ -36,6 +36,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    handleRedirectResult();
     const unsub = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
