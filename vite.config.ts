@@ -3,12 +3,13 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
   return {
     base: '/',
     plugins: [react(), tailwindcss()],
     define: {
+      'process.env': JSON.stringify(env),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.version': JSON.stringify('v20.0.0'),
       'globalThis.process.version': JSON.stringify('v20.0.0'),
