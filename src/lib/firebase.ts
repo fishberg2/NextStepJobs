@@ -1,18 +1,11 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
-
-const firebaseConfig = {
-  projectId: "nextstep-83c96",
-  appId: "1:701481021696:web:6d595a7cc14457b095c3e5",
-  apiKey: "AIzaSyBgVVuxIHdzJd9ODkaBcRJIPg9x1QqUazY",
-  authDomain: "nextstep-83c96.firebaseapp.com",
-  storageBucket: "nextstep-83c96.firebasestorage.app",
-  messagingSenderId: "701481021696",
-  measurementId: "G-86L8GV402N"
-};
+import { getFirestore } from 'firebase/firestore';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 
 export const handleRedirectResult = async () => {
   try {
@@ -28,18 +21,33 @@ export const handleRedirectResult = async () => {
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
   try {
+    // In some environments, popup might fail immediately with internal errors
+    // Attempt popup first, but be ready for fallback
     const res = await signInWithPopup(auth, provider);
     console.log("Popup sign-in successful", res.user);
   } catch (error: any) {
-    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cross-origin-opener-policy-failed') {
-      // Fallback to exactly what Firebase recommends: redirect
-      await signInWithRedirect(auth, provider);
-    } else if (error.code === 'auth/unauthorized-domain') {
-      console.error("Unauthorized domain error", error);
-      alert("This domain is not authorized for Firebase Authentication yet. Please add this domain to your Firebase Console under Authentication > Settings > Authorized Domains.");
+    console.error("Auth Error Code:", error.code);
+    
+    // If popup is blocked, cancelled, or fails with an internal assertion (common in iframes)
+    const fallbackCodes = [
+      'auth/popup-blocked',
+      'auth/popup-closed-by-user',
+      'auth/cancelled-popup-request',
+      'auth/internal-error',
+      'auth/cross-origin-opener-policy-failed'
+    ];
+
+    if (fallbackCodes.includes(error.code) || error.message?.includes('Pending promise')) {
+      console.log("Falling back to redirect...");
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (redirectError: any) {
+        console.error("Redirect sign-in failed", redirectError);
+        alert("Login failed: " + redirectError.message);
+      }
     } else {
       console.error("Error signing in with Google", error);
-      alert("Error signing in with Google: " + error.message);
+      alert("Login Error: " + error.message);
     }
   }
 };

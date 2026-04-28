@@ -5,8 +5,9 @@ let aiClient: GoogleGenAI | null = null;
 function getAI(): GoogleGenAI {
   if (!aiClient) {
     const key = process.env.GEMINI_API_KEY;
+
     if (!key) {
-      throw new Error("GEMINI_API_KEY is missing. If you deployed this to GitHub Pages, you need to set the GEMINI_API_KEY secret in your GitHub repository and trigger a new build, or provide an input for the user to enter their API key.");
+      throw new Error("GEMINI_API_KEY is missing. Please ensure it is set in your environment.");
     }
     aiClient = new GoogleGenAI({ apiKey: key });
   }
