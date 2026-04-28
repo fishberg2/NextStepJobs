@@ -105,9 +105,9 @@ export default function App() {
       }
       
       setAppState('results');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('Something went wrong while generating recommendations. Please try again.');
+      setError(err?.message || 'Something went wrong while generating recommendations. Please try again.');
       setAppState('questionnaire');
     }
   };

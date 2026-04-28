@@ -1,6 +1,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY is missing. If you deployed this to GitHub Pages, you need to set the GEMINI_API_KEY secret in your GitHub repository and trigger a new build, or provide an input for the user to enter their API key.");
+    }
+    aiClient = new GoogleGenAI({ apiKey: key });
+  }
+  return aiClient;
+}
 
 export interface UserProfile {
   educationStage: string;
@@ -30,7 +41,7 @@ export interface CareerMapStep {
 export async function getSkillTranslations(profile: UserProfile): Promise<SkillTranslation[]> {
   const prompt = `Based on the user's skills: "${profile.skills}" and education stage "${profile.educationStage}", extract 4 key skills and translate them into corporate/professional equivalents.`;
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
@@ -71,7 +82,7 @@ Step 2 should be "Transitional Growth" (what to learn/experience next).
 Step 3 should be "Target Role".`;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
@@ -119,7 +130,7 @@ For each career, provide the title, a brief description, exactly why it's a grea
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
