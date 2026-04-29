@@ -4,14 +4,13 @@ let aiClient: GoogleGenAI | null = null;
 
 function getAI(): GoogleGenAI {
   if (!aiClient) {
-    // Check various locations for the API key to ensure compatibility across environments
-    const key = (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) || 
-                (import.meta.env?.VITE_GEMINI_API_KEY) || 
-                (import.meta.env?.GEMINI_API_KEY);
+    // We use process.env.GEMINI_API_KEY directly to ensure Vite's 'define' replacement works correctly.
+    // In the AI Studio environment, this value is provided automatically.
+    const key = process.env.GEMINI_API_KEY;
 
     if (!key) {
       console.error("GEMINI_API_KEY not found in environment.");
-      throw new Error("GEMINI_API_KEY is missing. If you are using Wasmer, please set it as a Secret named VITE_GEMINI_API_KEY or GEMINI_API_KEY.");
+      throw new Error("GEMINI_API_KEY is missing. If you are using Wasmer, please set it as a Secret named GEMINI_API_KEY and re-build your app.");
     }
     aiClient = new GoogleGenAI({ apiKey: key });
   }
